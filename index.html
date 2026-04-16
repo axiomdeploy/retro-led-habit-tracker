@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HABIT_TRACKER.EXE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white: #ffffff;
+      --dim: #aaaaaa;
+      --darker: #555555;
+      --green: #ffffff;
+      --green-dim: #e0e0e0;
+      --red: #ff4466;
+      --yellow: #ffdd00;
+      --blue: #00ccff;
+      --border: #333333;
+      --card-bg: #0a0a0a;
+      --glow: 0 0 6px #fff, 0 0 14px #fff8, 0 0 28px #fff4;
+      --glow-green: 0 0 6px #ffffff, 0 0 14px #ffffff88, 0 0 28px #ffffff44;
+      --glow-yellow: 0 0 6px #ffdd00, 0 0 14px #ffdd0088;
+      --glow-blue: 0 0 6px #00ccff, 0 0 14px #00ccff88;
+    }
+
+    html, body {
+      background: #000;
+      color: var(--white);
+      font-family: 'Press Start 2P', monospace;
+      min-height: 100vh;
+      -webkit-font-smoothing: none;
+      image-rendering: pixelated;
+      overflow-x: hidden;
+    }
+
+    /* ─── SCROLLBAR ─────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 0; }
+
+    /* ─── SCANLINE OVERLAY ──────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(0,0,0,0.12) 3px,
+        rgba(0,0,0,0.12) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ─── SCREENS ───────────────────────────────────── */
+    .screen { display: none; min-height: 100vh; }
+    .screen.active { display: flex; }
+
+    /* ═══════════════════════════════════════════════════
+       SCREEN 1 – LOGIN
+    ═══════════════════════════════════════════════════ */
+    #loginScreen {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #loginScreen::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(0,255,136,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 30%, rgba(0,204,255,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+      border: 1px solid #333;
+      background: #050505;
+      padding: 32px 28px;
+      position: relative;
+    }
+
+    .login-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--green), transparent);
+      box-shadow: var(--glow-green);
+    }
+
+    .logo-title {
+      font-size: clamp(10px, 3vw, 14px);
+      color: var(--white);
+      text-shadow: var(--glow);
+      text-align: center;
+      line-height: 1.8;
+      margin-bottom: 6px;
+      letter-spacing: 2px;
+    }
+
+    .logo-sub {
+      font-size: 7px;
+      color: var(--green);
+      text-align: center;
+      text-shadow: var(--glow-green);
+      margin-bottom: 36px;
+      letter-spacing: 4px;
+    }
+
+    .pixel-label {
+      font-size: 7px;
+      color: var(--dim);
+      display: block;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+
+    .pixel-input {
+      width: 100%;
+      background: #000;
+      border: 1px solid #333;
+      border-left: 3px solid var(--green);
+      color: var(--white);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      caret-color: var(--green);
+      letter-spacing: 1px;
+    }
+
+    .pixel-input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 1px var(--green), inset 0 0 12px rgba(0,255,136,0.05);
+    }
+
+    .pixel-input::placeholder { color: #444; }
+
+    .form-group { margin-bottom: 20px; }
+
+    .btn {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 2px;
+      transition: all 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.15s;
+    }
+
+    .btn:active::after { background: rgba(255,255,255,0.12); }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--green);
+      color: #000;
+      padding: 14px;
+      box-shadow: 0 4px 0 var(--green-dim), var(--glow-green);
+    }
+
+    .btn-primary:hover {
+      background: #11ffaa;
+      transform: translateY(-1px);
+      box-shadow: 0 5px 0 var(--green-dim), var(--glow-green);
+    }
+
+    .btn-primary:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 var(--green-dim);
+    }
+
+    .btn-secondary {
+      width: 100%;
+      background: transparent;
+      color: var(--white);
+      padding: 14px;
+      border: 1px solid #444;
+      box-shadow: 0 4px 0 #222;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--white);
+      box-shadow: 0 4px 0 #222, var(--glow);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #222;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #333, transparent);
+      margin: 24px 0;
+    }
+
+    .otp-section { display: none; animation: fadeSlideIn 0.3s ease; }
+    .otp-section.show { display: block; }
+
+    /* ─── OTP POPUP ─────────────────────────────────── */
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .popup-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .popup-box {
+      background: #050505;
+      border: 1px solid var(--green);
+      box-shadow: 0 0 40px rgba(0,255,136,0.2), inset 0 0 40px rgba(0,255,136,0.03);
+      padding: 32px 28px;
+      max-width: 340px;
+      width: 100%;
+      text-align: center;
+      transform: scale(0.9);
+      transition: transform 0.25s;
+      position: relative;
+    }
+
+    .popup-overlay.show .popup-box { transform: scale(1); }
+
+    .popup-tag {
+      font-size: 7px;
+      color: var(--green);
+      text-shadow: var(--glow-green);
+      letter-spacing: 3px;
+      margin-bottom: 20px;
+    }
+
+    .popup-otp {
+      font-size: clamp(24px, 8vw, 40px);
+      color: var(--white);
+      text-shadow: var(--glow);
+      letter-spacing: 12px;
+      margin: 20px 0;
+      display: block;
+    }
+
+    .popup-hint {
+      font-size: 6px;
+      color: var(--dim);
+      line-height: 2;
+      margin-bottom: 24px;
+      letter-spacing: 1px;
+    }
+
+    .popup-close {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      background: transparent;
+      border: 1px solid #333;
+      color: var(--dim);
+      padding: 10px 20px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      transition: all 0.15s;
+    }
+
+    .popup-close:hover { border-color: var(--green); color: var(--green); }
+
+    .blink {
+      animation: blink 1s step-end infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       SCREEN 2 – MAIN APP
+    ═══════════════════════════════════════════════════ */
+    #appScreen {
+      flex-direction: column;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    /* ─── HEADER ────────────────────────────────────── */
+    .app-header {
+      border-bottom: 1px solid #1a1a1a;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: #000;
+      z-index: 100;
+    }
+
+    .app-header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--green) 30%, var(--green) 70%, transparent);
+      opacity: 0.4;
+    }
+
+    .header-title {
+      font-size: clamp(8px, 2.5vw, 11px);
+      color: var(--white);
+      text-shadow: var(--glow);
+      letter-spacing: 2px;
+    }
+
+    .header-date {
+      font-size: 6px;
+      color: var(--green);
+      text-shadow: var(--glow-green);
+      letter-spacing: 1px;
+      text-align: right;
+    }
+
+    .app-content {
+      flex: 1;
+      max-width: 640px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    /* ─── STATS BAR ─────────────────────────────────── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #060606;
+      border: 1px solid #1e1e1e;
+      padding: 14px 10px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: var(--green);
+      opacity: 0.5;
+    }
+
+    .stat-num {
+      font-size: clamp(14px, 4vw, 22px);
+      color: var(--green);
+      text-shadow: var(--glow-green);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 5px;
+      color: var(--darker);
+      letter-spacing: 1px;
+      line-height: 1.6;
+    }
+
+    /* ─── ADD HABIT ──────────────────────────────────── */
+    .section-label {
+      font-size: 7px;
+      color: var(--dim);
+      letter-spacing: 3px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #1a1a1a;
+    }
+
+    .add-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .add-row .pixel-input {
+      flex: 1;
+      padding: 12px;
+    }
+
+    .btn-add {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 14px;
+      background: var(--green);
+      color: #000;
+      border: none;
+      width: 46px;
+      height: 46px;
+      cursor: pointer;
+      flex-shrink: 0;
+      box-shadow: 0 4px 0 var(--green-dim), var(--glow-green);
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-add:hover {
+      background: #11ffaa;
+      transform: translateY(-1px);
+      box-shadow: 0 5px 0 var(--green-dim), var(--glow-green);
+    }
+
+    .btn-add:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 var(--green-dim);
+    }
+
+    /* ─── HABITS LIST ────────────────────────────────── */
+    .habits-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .habit-card {
+      background: var(--card-bg);
+      border: 1px solid #1e1e1e;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .habit-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: #333;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    .habit-card.done::before {
+      background: var(--green);
+      box-shadow: var(--glow-green);
+    }
+
+    .habit-card:hover {
+      border-color: #2e2e2e;
+      background: #0d0d0d;
+    }
+
+    .habit-card.done {
+      border-color: #1a3320;
+      background: #050f08;
+    }
+
+    .habit-card.pulse {
+      animation: pulse 0.3s ease;
+    }
+
+    .habit-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .habit-name {
+      font-size: clamp(7px, 2vw, 9px);
+      color: var(--white);
+      line-height: 1.7;
+      flex: 1;
+      word-break: break-word;
+      transition: color 0.2s, text-shadow 0.2s;
+    }
+
+    .habit-card.done .habit-name {
+      color: var(--green);
+      text-shadow: var(--glow-green);
+    }
+
+    .habit-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .checkmark {
+      width: 28px;
+      height: 28px;
+      border: 2px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .habit-card.done .checkmark {
+      border-color: var(--green);
+      background: var(--green);
+      color: #000;
+      box-shadow: var(--glow-green);
+      animation: popIn 0.25s ease;
+    }
+
+    .streak-badge {
+      font-size: 7px;
+      color: var(--yellow);
+      text-shadow: var(--glow-yellow);
+      background: #111;
+      border: 1px solid #333;
+      padding: 4px 6px;
+      white-space: nowrap;
+      letter-spacing: 1px;
+    }
+
+    /* ─── WEEK GRID ──────────────────────────────────── */
+    .week-grid {
+      display: flex;
+      gap: 4px;
+      align-items: flex-end;
+    }
+
+    .day-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      flex: 1;
+    }
+
+    .day-dot {
+      width: 100%;
+      aspect-ratio: 1;
+      max-width: 20px;
+      border: 1px solid #222;
+      background: #0a0a0a;
+      transition: all 0.2s;
+    }
+
+    .day-dot.filled {
+      background: var(--green);
+      border-color: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    .day-dot.today {
+      border-color: #444;
+    }
+
+    .day-dot.today.filled {
+      box-shadow: 0 0 8px var(--green), 0 0 16px var(--green);
+    }
+
+    .day-label {
+      font-size: 5px;
+      color: #333;
+      letter-spacing: 0;
+    }
+
+    .day-dot.today + .day-label,
+    .day-cell.today .day-label {
+      color: #666;
+    }
+
+    /* ─── HABIT FOOTER ──────────────────────────────── */
+    .habit-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .habit-delete {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 5px;
+      background: transparent;
+      border: none;
+      color: #333;
+      cursor: pointer;
+      letter-spacing: 1px;
+      padding: 4px;
+      transition: color 0.2s;
+    }
+
+    .habit-delete:hover { color: var(--red); }
+
+    /* ─── EMPTY STATE ────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 16px;
+      border: 1px dashed #1e1e1e;
+    }
+
+    .empty-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .empty-title {
+      font-size: 8px;
+      color: var(--dim);
+      margin-bottom: 10px;
+      letter-spacing: 2px;
+    }
+
+    .empty-sub {
+      font-size: 6px;
+      color: #333;
+      line-height: 2;
+      letter-spacing: 1px;
+    }
+
+    /* ─── TOAST ──────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #0a0a0a;
+      border: 1px solid var(--green);
+      color: var(--green);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      padding: 12px 20px;
+      letter-spacing: 2px;
+      box-shadow: var(--glow-green);
+      z-index: 999;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      text-align: center;
+      max-width: 280px;
+      width: calc(100% - 40px);
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ─── TICKER ─────────────────────────────────────── */
+    .ticker-wrap {
+      overflow: hidden;
+      border-top: 1px solid #111;
+      border-bottom: 1px solid #111;
+      background: #050505;
+      padding: 8px 0;
+      margin-bottom: 24px;
+    }
+
+    .ticker-inner {
+      display: flex;
+      gap: 40px;
+      animation: ticker 20s linear infinite;
+      white-space: nowrap;
+    }
+
+    .ticker-item {
+      font-size: 6px;
+      color: #333;
+      letter-spacing: 2px;
+      flex-shrink: 0;
+    }
+
+    .ticker-item span { color: var(--green); }
+
+    /* ─── ANIMATIONS ─────────────────────────────────── */
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0); }
+      60% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateX(-12px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ─── RESPONSIVE ─────────────────────────────────── */
+    @media (max-width: 380px) {
+      .login-box { padding: 24px 16px; }
+      .stats-bar { gap: 6px; }
+      .stat-card { padding: 10px 6px; }
+    }
+
+    /* ─── BOOT SCREEN ────────────────────────────────── */
+    #bootScreen {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 9000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .boot-text {
+      font-size: clamp(8px, 2.5vw, 12px);
+      color: var(--green);
+      text-shadow: var(--glow-green);
+      letter-spacing: 3px;
+    }
+
+    .boot-bar-wrap {
+      width: 220px;
+      height: 8px;
+      border: 1px solid #333;
+      overflow: hidden;
+    }
+
+    .boot-bar {
+      height: 100%;
+      background: var(--green);
+      box-shadow: var(--glow-green);
+      width: 0%;
+      animation: bootLoad 1.4s ease forwards;
+    }
+
+    .boot-sub {
+      font-size: 6px;
+      color: #333;
+      letter-spacing: 2px;
+    }
+
+    @keyframes bootLoad {
+      0% { width: 0%; }
+      60% { width: 80%; }
+      100% { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════ BOOT SCREEN ══════════════ -->
+  <div id="bootScreen">
+    <div class="boot-text">HABIT_TRACKER.EXE</div>
+    <div class="boot-bar-wrap"><div class="boot-bar"></div></div>
+    <div class="boot-sub blink">LOADING SYSTEM...</div>
+  </div>
+
+  <!-- ══════════════ SCREEN 1 – LOGIN ══════════════ -->
+  <div id="loginScreen" class="screen">
+    <div class="login-box">
+      <div class="logo-title">HABIT<br>TRACKER</div>
+      <div class="logo-sub">// LEVEL UP YOUR LIFE //</div>
+
+      <div class="form-group">
+        <label class="pixel-label">► GMAIL ADDRESS</label>
+        <input type="email" id="gmailInput" class="pixel-input" placeholder="you@gmail.com" autocomplete="off" spellcheck="false" />
+      </div>
+
+      <button class="btn btn-primary" id="sendOtpBtn" onclick="sendOTP()">SEND OTP</button>
+
+      <div class="divider"></div>
+
+      <div class="otp-section" id="otpSection">
+        <div class="form-group">
+          <label class="pixel-label">► ENTER OTP</label>
+          <input type="text" id="otpInput" class="pixel-input" placeholder="----" maxlength="4" autocomplete="off" inputmode="numeric" />
+        </div>
+        <button class="btn btn-secondary" onclick="verifyOTP()">VERIFY &amp; LOGIN</button>
+      </div>
+
+      <div style="margin-top:28px; text-align:center;">
+        <span style="font-size:6px; color:#333; letter-spacing:2px;">SECURE // OFFLINE // LOCAL</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ OTP POPUP ══════════════ -->
+  <div class="popup-overlay" id="otpPopup">
+    <div class="popup-box">
+      <div class="popup-tag">// OTP SENT //</div>
+      <div style="font-size:7px; color:#555; letter-spacing:1px; margin-bottom:4px;">YOUR CODE</div>
+      <span class="popup-otp" id="popupOtpNumber">----</span>
+      <div class="popup-hint">COPY &amp; PASTE BELOW<br>EXPIRES IN: <span style="color:var(--green)" id="countdown">60</span>s</div>
+      <button class="popup-close" onclick="closePopup()">[ CLOSE ]</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN 2 – APP ══════════════ -->
+  <div id="appScreen" class="screen">
+
+    <div class="app-header">
+      <div>
+        <div class="header-title">HABIT.EXE</div>
+      </div>
+      <div class="header-date" id="headerDate">--/--/----</div>
+    </div>
+
+    <div class="app-content">
+
+      <!-- TICKER -->
+      <div class="ticker-wrap">
+        <div class="ticker-inner" id="ticker">
+          <span class="ticker-item">STREAK <span>ACTIVATED</span></span>
+          <span class="ticker-item">BUILD <span>MOMENTUM</span></span>
+          <span class="ticker-item">STAY <span>CONSISTENT</span></span>
+          <span class="ticker-item">LEVEL <span>UP</span></span>
+          <span class="ticker-item">GRIND <span>DAILY</span></span>
+          <span class="ticker-item">STREAK <span>ACTIVATED</span></span>
+          <span class="ticker-item">BUILD <span>MOMENTUM</span></span>
+          <span class="ticker-item">STAY <span>CONSISTENT</span></span>
+          <span class="ticker-item">LEVEL <span>UP</span></span>
+          <span class="ticker-item">GRIND <span>DAILY</span></span>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-bar">
+        <div class="stat-card">
+          <span class="stat-num" id="statTotal">00</span>
+          <div class="stat-label">TOTAL<br>HABITS</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="statToday">00</span>
+          <div class="stat-label">DONE<br>TODAY</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="statBest">00</span>
+          <div class="stat-label">BEST<br>STREAK</div>
+        </div>
+      </div>
+
+      <!-- ADD HABIT -->
+      <div class="section-label">NEW HABIT</div>
+      <div class="add-row">
+        <input type="text" id="newHabitInput" class="pixel-input" placeholder="eg: drink water" maxlength="40" autocomplete="off" />
+        <button class="btn-add" id="addHabitBtn" title="Add Habit" onclick="addHabit()">+</button>
+      </div>
+
+      <!-- HABITS LIST -->
+      <div class="section-label">MY HABITS</div>
+      <div class="habits-list" id="habitsList"></div>
+
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ═══════════════════════════════════════════════════
+    //  STATE & STORAGE
+    // ═══════════════════════════════════════════════════
+    let habits = [];
+    let generatedOTP = '';
+    let countdownTimer = null;
+
+    const STORAGE_KEY = 'habitTracker_v2';
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
+    }
+
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        habits = raw ? JSON.parse(raw) : [];
+      } catch(e) {
+        habits = [];
+      }
+    }
+
+    function todayStr() {
+      return new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+    }
+
+    function getLast7Days() {
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        days.push(d.toISOString().slice(0, 10));
+      }
+      return days;
+    }
+
+    function dayLabel(dateStr) {
+      const labels = ['SU','MO','TU','WE','TH','FR','SA'];
+      return labels[new Date(dateStr + 'T00:00:00').getDay()];
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  BOOT
+    // ═══════════════════════════════════════════════════
+    window.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      setTimeout(() => {
+        document.getElementById('bootScreen').style.opacity = '0';
+        document.getElementById('bootScreen').style.transition = 'opacity 0.5s';
+        setTimeout(() => {
+          document.getElementById('bootScreen').style.display = 'none';
+          // Check if already logged in
+          if (localStorage.getItem('habitTracker_loggedIn') === 'true') {
+            showApp();
+          } else {
+            showLogin();
+          }
+        }, 500);
+      }, 1800);
+    });
+
+    function showLogin() {
+      document.getElementById('loginScreen').classList.add('active');
+      document.getElementById('appScreen').classList.remove('active');
+    }
+
+    function showApp() {
+      document.getElementById('loginScreen').classList.remove('active');
+      document.getElementById('appScreen').classList.add('active');
+      renderApp();
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  LOGIN FLOW
+    // ═══════════════════════════════════════════════════
+    function sendOTP() {
+      const gmail = document.getElementById('gmailInput').value.trim();
+      if (!gmail || !gmail.includes('@')) {
+        showToast('ENTER A VALID EMAIL', false);
+        document.getElementById('gmailInput').focus();
+        return;
+      }
+
+      generatedOTP = String(Math.floor(1000 + Math.random() * 9000));
+      document.getElementById('popupOtpNumber').textContent = generatedOTP;
+      document.getElementById('otpInput').value = '';
+
+      // Show popup
+      document.getElementById('otpPopup').classList.add('show');
+
+      // Countdown
+      let timeLeft = 60;
+      document.getElementById('countdown').textContent = timeLeft;
+      clearInterval(countdownTimer);
+      countdownTimer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('countdown').textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(countdownTimer);
+          document.getElementById('countdown').textContent = '00';
+        }
+      }, 1000);
+
+      // Show OTP section below
+      document.getElementById('otpSection').classList.add('show');
+    }
+
+    function closePopup() {
+      document.getElementById('otpPopup').classList.remove('show');
+      clearInterval(countdownTimer);
+      // Focus OTP input
+      setTimeout(() => document.getElementById('otpInput').focus(), 100);
+    }
+
+    function verifyOTP() {
+      const entered = document.getElementById('otpInput').value.trim();
+      if (!generatedOTP) {
+        showToast('SEND OTP FIRST', false);
+        return;
+      }
+      if (entered === generatedOTP) {
+        clearInterval(countdownTimer);
+        localStorage.setItem('habitTracker_loggedIn', 'true');
+        showToast('ACCESS GRANTED ✓', true);
+        setTimeout(() => showApp(), 800);
+      } else {
+        showToast('WRONG OTP // RETRY', false);
+        document.getElementById('otpInput').value = '';
+        document.getElementById('otpInput').focus();
+        // Shake
+        const input = document.getElementById('otpInput');
+        input.style.borderColor = 'var(--red)';
+        input.style.boxShadow = '0 0 0 1px var(--red)';
+        setTimeout(() => {
+          input.style.borderColor = '';
+          input.style.boxShadow = '';
+        }, 600);
+      }
+    }
+
+    // Enter key for OTP inputs
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('gmailInput')?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') sendOTP();
+      });
+      document.getElementById('otpInput')?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') verifyOTP();
+      });
+      document.getElementById('newHabitInput')?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') addHabit();
+      });
+    });
+
+    // ═══════════════════════════════════════════════════
+    //  APP LOGIC
+    // ═══════════════════════════════════════════════════
+    function addHabit() {
+      const input = document.getElementById('newHabitInput');
+      const name = input.value.trim().toUpperCase();
+      if (!name) {
+        input.focus();
+        return;
+      }
+      if (habits.some(h => h.name === name)) {
+        showToast('HABIT EXISTS!', false);
+        return;
+      }
+
+      const habit = {
+        id: Date.now(),
+        name: name,
+        createdAt: todayStr(),
+        completions: [],   // array of date strings "YYYY-MM-DD"
+      };
+
+      habits.unshift(habit);
+      saveData();
+      input.value = '';
+      renderApp();
+      showToast('HABIT ADDED ✓', true);
+    }
+
+    function toggleHabit(id) {
+      const habit = habits.find(h => h.id === id);
+      if (!habit) return;
+
+      const today = todayStr();
+      const idx = habit.completions.indexOf(today);
+
+      if (idx === -1) {
+        habit.completions.push(today);
+        showToast('DONE! KEEP IT UP 🔥', true);
+      } else {
+        habit.completions.splice(idx, 1);
+        showToast('UNMARKED', false);
+      }
+
+      saveData();
+      renderApp();
+
+      // Pulse animation on card
+      const card = document.querySelector(`[data-id="${id}"]`);
+      if (card) {
+        card.classList.remove('pulse');
+        void card.offsetWidth; // reflow
+        card.classList.add('pulse');
+        setTimeout(() => card.classList.remove('pulse'), 350);
+      }
+    }
+
+    function deleteHabit(id) {
+      habits = habits.filter(h => h.id !== id);
+      saveData();
+      renderApp();
+      showToast('HABIT DELETED', false);
+    }
+
+    function getStreak(habit) {
+      if (!habit.completions.length) return 0;
+      const sorted = [...habit.completions].sort();
+      let streak = 0;
+      const today = todayStr();
+      let checkDate = new Date(today + 'T00:00:00');
+
+      while (true) {
+        const ds = checkDate.toISOString().slice(0, 10);
+        if (sorted.includes(ds)) {
+          streak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      return streak;
+    }
+
+    function getBestStreak(habit) {
+      if (!habit.completions.length) return 0;
+      const sorted = [...habit.completions].sort();
+      let best = 1, cur = 1;
+      for (let i = 1; i < sorted.length; i++) {
+        const prev = new Date(sorted[i-1] + 'T00:00:00');
+        const curr = new Date(sorted[i] + 'T00:00:00');
+        const diff = (curr - prev) / 86400000;
+        if (diff === 1) {
+          cur++;
+          best = Math.max(best, cur);
+        } else if (diff > 1) {
+          cur = 1;
+        }
+      }
+      return best;
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  RENDER
+    // ═══════════════════════════════════════════════════
+    function renderApp() {
+      const today = todayStr();
+      const last7 = getLast7Days();
+
+      // Header date
+      const now = new Date();
+      const opts = { weekday:'short', month:'short', day:'numeric', year:'numeric' };
+      document.getElementById('headerDate').textContent =
+        now.toLocaleDateString('en-US', opts).toUpperCase();
+
+      // Stats
+      const totalHabits = habits.length;
+      const doneToday = habits.filter(h => h.completions.includes(today)).length;
+      const bestStreak = habits.length
+        ? Math.max(...habits.map(h => getBestStreak(h)), 0)
+        : 0;
+
+      document.getElementById('statTotal').textContent = String(totalHabits).padStart(2,'0');
+      document.getElementById('statToday').textContent = String(doneToday).padStart(2,'0');
+      document.getElementById('statBest').textContent = String(bestStreak).padStart(2,'0');
+
+      // Habits
+      const list = document.getElementById('habitsList');
+
+      if (!habits.length) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <span class="empty-icon">📋</span>
+            <div class="empty-title">NO HABITS YET</div>
+            <div class="empty-sub">ADD YOUR FIRST HABIT<br>ABOVE TO GET STARTED</div>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = habits.map((habit, i) => {
+        const isDone = habit.completions.includes(today);
+        const streak = getStreak(habit);
+        const streakEmoji = streak >= 7 ? '🔥' : streak >= 3 ? '⚡' : '○';
+
+        const weekCells = last7.map(ds => {
+          const done = habit.completions.includes(ds);
+          const isToday = ds === today;
+          return `
+            <div class="day-cell ${isToday ? 'today' : ''}">
+              <div class="day-dot ${done ? 'filled' : ''} ${isToday ? 'today' : ''}"></div>
+              <div class="day-label">${dayLabel(ds)}</div>
+            </div>`;
+        }).join('');
+
+        return `
+          <div class="habit-card ${isDone ? 'done' : ''}"
+               data-id="${habit.id}"
+               onclick="toggleHabit(${habit.id})"
+               style="animation: cardIn 0.3s ease ${i * 0.05}s both;">
+            <div class="habit-top">
+              <div class="habit-name">${escapeHtml(habit.name)}</div>
+              <div class="habit-right">
+                <div class="streak-badge">${streakEmoji} ${String(streak).padStart(2,'0')}d</div>
+                <div class="checkmark">${isDone ? '✓' : ''}</div>
+              </div>
+            </div>
+            <div class="week-grid">${weekCells}</div>
+            <div class="habit-footer">
+              <span style="font-size:5px; color:#333; letter-spacing:1px;">
+                SINCE ${habit.createdAt}
+              </span>
+              <button class="habit-delete" onclick="event.stopPropagation(); deleteHabit(${habit.id})">
+                [ DELETE ]
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  TOAST
+    // ═══════════════════════════════════════════════════
+    let toastTimer = null;
+    function showToast(msg, success = true) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.borderColor = success ? 'var(--green)' : 'var(--red)';
+      toast.style.color = success ? 'var(--green)' : 'var(--red)';
+      toast.style.boxShadow = success
+        ? '0 0 20px rgba(0,255,136,0.3)'
+        : '0 0 20px rgba(255,68,102,0.3)';
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  MIDNIGHT RESET (auto-refresh at midnight)
+    // ═══════════════════════════════════════════════════
+    function scheduleMidnightRefresh() {
+      const now = new Date();
+      const msUntilMidnight =
+        new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0) - now;
+      setTimeout(() => {
+        renderApp();
+        scheduleMidnightRefresh();
+      }, msUntilMidnight + 100);
+    }
+
+    scheduleMidnightRefresh();
+  </script>
+</body>
+</html>
