@@ -792,43 +792,6 @@
       60% { width: 80%; }
       100% { width: 100%; }
     }
-
-
-    /* ─── FIXED INSTALL BUTTON (ADDED) ─────────────── */
-    .fixed-install-btn {
-      position: fixed;
-      top: 14px;
-      right: 14px;
-      z-index: 10001;
-      border: 1px solid rgba(0, 255, 255, 0.65);
-      border-radius: 8px;
-      padding: 8px 12px;
-      background: linear-gradient(135deg, rgba(0, 255, 255, 0.24), rgba(0, 132, 255, 0.16));
-      color: #bfffff;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 7px;
-      letter-spacing: 1px;
-      text-shadow: 0 0 8px rgba(147, 255, 255, 0.9);
-      box-shadow:
-        0 0 0 1px rgba(140, 255, 255, 0.35) inset,
-        0 0 10px rgba(0, 255, 255, 0.45),
-        0 0 22px rgba(0, 128, 255, 0.25);
-      cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-      pointer-events: auto;
-    }
-
-    .fixed-install-btn:hover {
-      transform: translateY(-1px);
-      box-shadow:
-        0 0 0 1px rgba(140, 255, 255, 0.5) inset,
-        0 0 14px rgba(0, 255, 255, 0.6),
-        0 0 28px rgba(0, 128, 255, 0.38);
-    }
-
-    .fixed-install-btn:active {
-      transform: translateY(1px);
-    }
   </style>
 </head>
 <body>
@@ -1316,15 +1279,5 @@
 
     scheduleMidnightRefresh();
   </script>
-
-  <button
-    class="fixed-install-btn"
-    type="button"
-    onclick="window.open('https://median.co/share/nmjlkkk#apk', '_blank')"
-    aria-label="Install APK"
-  >
-    INSTALL
-  </button>
-
 </body>
 </html>
